@@ -1,0 +1,96 @@
+const racas = document.getElementById("racas");
+const quantidade = document.getElementById("quantidade");
+const galeria = document.getElementById("galeria");
+const mensagem = document.getElementById("mensagem");
+
+// Carregar todas as raças
+async function carregarRacas() {
+    try{
+        const resposta = await fetch(
+            "https://dog.ceo/api/breeds/list/all"
+        );
+
+        if(!resposta.ok) throw new Error("Error na API");
+
+        const dados = await resposta.json();
+
+        for (let raca in dados.message){
+            const opcao = document.createElement("option");
+            opcao.values = raca;
+            opcao.textContent = raca;
+            racas.appendChild(opcao)
+        }
+   } catch (erro){
+    mensagem.textContent = "erro ao carregar raças"
+   }
+    
+}
+
+//exibir as imagens recebidas
+function mostrarImagens(imagens){
+    galeria.innerHTML = "";
+
+    imagens.forEach(function(url){
+        const imagem = document.createElement("img");
+        imagem.src = url;
+        imagem.alt = "fotografia da raça escolhida";
+        galeria.appendChild(imagem);
+
+    });
+}
+
+// buscar imagens API
+async function buscarImagens(url){
+    mensagem.textContent = "carregando...";
+    galeria.innerHTML = "";
+
+    try{
+        const resposta = await fetch(url);
+        if (!resposta.ok) throw new Error("Erro na API - erro ao buscar as imagens")
+
+            const dados = await resposta.json();
+
+            mostrarImagens(dados.message);
+            mensagem.textContent = "";
+} catch(erro) {
+    mensagem.textContent = "erro ao buscar imagem"
+    }
+}
+
+// mostrar cachorros aleatórios
+document.getElementById("aleatorios")
+.addEventListener("click", function () {
+
+const numero = Number(quantidade.value);
+
+if (!Number.isInteger(numero) || 
+    numero < 1 || numero > 10) {
+    mensagem.textContent = 
+    "escolha um número de 1 a 10";
+    return;
+
+}
+
+buscarImagens(
+    `https://dog.ceo/api/breeds/image/random/${numero}`
+);
+
+});
+
+// mostrar 3 cachorros da raça selecionada
+document.getElementById("porRaca")
+.addEventListener("click", function() {
+
+    const raca = racas.value;
+    if(raca === ""){
+        mensagem.textContent = "Selecione uma raça";
+        return;
+    }
+
+    buscarImagens(
+        `https://dog.ceo/api/breed/${raca}/images/random/3`
+    );
+});
+
+//carrega as racas ao abrir a página
+carregarRacas();
